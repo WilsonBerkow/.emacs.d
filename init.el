@@ -1,5 +1,7 @@
 ;; Wilson Berkow init.el
+
 ;; Generic input options:
+;; ~ means consider removing
 (column-number-mode)
 (show-paren-mode 1)
 (setq-default indent-tabs-mode nil)
@@ -10,7 +12,11 @@
 (setq shift-select-mode nil)
 (delete-selection-mode 1) ;; Delete selected text after start typing
 (global-linum-mode 1)
-;; ~ = consider removing
+(when (eq system-type 'darwin)
+  (setq mac-option-key-is-meta nil)
+  (setq mac-command-key-is-meta t)
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier 'none))
 
 ;; Consider: (require 'undo-tree)...? Just to try.
 
@@ -79,7 +85,7 @@
  '(haskell-process-log t))
 
 ;;(add-to-list 'load-path "~/haskell-mode/")
-(require 'haskell-mode-autoloads)
+;;(require 'haskell-mode-autoloads)
 ;;(add-to-list 'Info-default-directory-list "~/haskell-mode/")
 
 ;; Rationale behind rebinding of so many keys (below):
@@ -106,20 +112,17 @@
 (defun cadar (L) (car (cdr (car L))))
 (defun caddr (L) (car (cdr (cdr L))))
 (defun caar (L) (car (car L)))
+(defun pairp (x) (and x (listp x))) ;; already defined?
+
 
 ;; To modify word movement and deletion:
 ;;(require 'subword-mode)
-
 ;; (defun char-stx-type (ch) (char-to-string (char-syntax ch)))
 ;; (defun point-stx () (char-stx-type (char-after (point))))
 ;; (defun fwd-word ()
 ;;   (interactive)
-
 ;;   ;; Skip whitespace:
 ;;   (while (/= (point-stx) "-") (forward-char))
-
-;; The following already defined?
-(defun pairp (x) (and x (listp x)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Pattern matching macro stuff:
@@ -219,6 +222,8 @@
     (attach-kbds km (cdr bindings))))
 (put 'attach-kbds 'lisp-indent-function 1)
 
+
+
 ;; Org-mode:
 (require 'org)
 
@@ -242,8 +247,6 @@
 
 ;; Set number of newlines allowed in a markup expression (default is just 1)
 (setcar (nthcdr 4 org-emphasis-regexp-components) 10)
-
-
 
 
 
@@ -276,13 +279,13 @@
              (kill-line arg))
     (kill-line arg)))
 
-(defun restore-frame ()
-  "Restore a minimized frame"
+(defun restore-frame-with-w32 ()
+  "Restore a minimized frame with w32-send-sys-command"
   (interactive)
   (w32-send-sys-command 61728))
 
-(defun maximize-frame ()
-  "Maximize the frame"
+(defun maximize-frame-with-w32 ()
+  "Maximize the frame with w32-send-sys-command"
   (interactive)
   (w32-send-sys-command #xf030))
 
@@ -291,7 +294,7 @@
 (defun get-frame-height ()
   (cdr (assoc 'height (frame-parameters))))
 
-(defvar frame-maximized-width 150) ;; TODO
+(defvar frame-maximized-width 150)
 (defvar frame-maximized-height 40)
 ;; TODO: REPLACE FIXED VALS WITH PORTABLE SYSTEM:
 ;; (defun calc-max-dims ()
@@ -308,11 +311,16 @@
 
 (defun toggle-maximization ()
   (interactive)
-  (if (frame-is-maximized)
-      (restore-frame)
-    (maximize-frame)))
+  (if (fboundp 'toggle-frame-fullscreen)
+      (toggle-frame-fullscreen)
+    (when (fboundp 'w32-send-sys-command)
+      (if (frame-is-maximized)
+          (restore-frame-with-w32)
+        (maximize-frame-with-w32)))))
 
-(maximize-frame)
+(toggle-maximization)
+
+
 
 ;; Global keybindings:
 (defvar char-movement
@@ -394,10 +402,11 @@
 (defun marker-to-string (marker)
   (concat (number-to-string (marker-position marker)) ", "))
 
-(defun merge-strings (L)
+(defun concat-list-elems (L)
   (match-list L
     (nil "")
-    ((cons x xs) (concat x (merge-strings xs)))))
+    ((cons x xs) (concat x (concat-list-elems xs)))))
+
 (defun jump-to-mark (&optional arg)
   "Jumps to the local mark, respecting the `mark-ring' order.
   When called with a prefix argument, reverses the order of the `mark-ring'
@@ -432,11 +441,6 @@
 (defun backward-mark-ring ()
   (interactive)
   (jump-to-mark 1))
-
-;; mark-ring
-;; last
-;; (setq mark-ring '())
-;; (setq mark-ring (list (car mark-ring) (cadr mark-ring)))
 
 (defun exchange-point-and-mark-no-activate ()
   "Identical to \\[exchange-point-and-mark] but will not activate the region."
