@@ -20,6 +20,8 @@
 
 ;; Consider: (require 'undo-tree)...? Just to try.
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Melpa:
 (require 'package)
@@ -47,6 +49,7 @@
   (mapcar 'require-package
           '(;; magit
             ;; subword-mode
+            god-mode ;; experimental ATM
             haskell-mode
             async
             rust-mode
@@ -71,7 +74,25 @@
 (defvar gnutls-trustfiles '("C:\\Users\\Wilson\\Downloads\\gnutls\\certificate-also-necessary\\cacert.pem"))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
 ;;(add-to-list 'load-path "~/elisp/")
+
+;; god-mode
+(require 'god-mode)
+(global-set-key (kbd "<escape>") 'god-meta-mode)
+(setq god-exempt-predicates nil)
+(setq god-exempt-major-modes nil)
+(defun god-meta-mode ()
+  (interactive)
+  (if god-local-mode
+      (god-mode-all)
+    (progn
+      (setq god-mod-alist
+            '((nil . "M-")
+              ("g" . "C-")
+              ("G" . "C-M-")))
+      (god-mode-all))))
 
 ;; Haskell:
 (require 'haskell-interactive-mode)
@@ -88,33 +109,6 @@
 ;;(require 'haskell-mode-autoloads)
 ;;(add-to-list 'Info-default-directory-list "~/haskell-mode/")
 
-;; Rationale behind rebinding of so many keys (below):
-;; I have been getting used to Emacs's default mvmnt
-;; commands (e.g. C- f,b,n,p for movement), but even though
-;; it's fairly simple to get these into muscle memory, they,
-;; and some other movment patterns (e.g. M-f for move by word,
-;; C-f by char. Slow and awkward to jump btwn M and C so much).
-;; There are a few sets of commands that provide really nice
-;; versatile and work best with a full layout redo:
-;;  scrolling (M-h, M-y, M-H, M-Y, M-I, M-K)
-;;  movement (M-i,j,k,l,u,o,9,0)
-;;  editing (M-w,e,d,f,F)
-;;  window switching (M-t M-i,j,k,l)
-;;  buffer switching (M-b M-j,l)
-;; With the C-f/M-f example, the setup with M-i,j,k,l for character
-;; movement and M-u,o for word movement allows for much faster
-;; and more precise movement. Additionally, not having to jump
-;; around on the keyboard, and being able to do most movement
-;; with one hand, is pretty nice too. I'll be seeing if it's nice
-;; enough to make up for the hassle of dealing with minor and major
-;; modes shadowing my keybindings.
-
-(defun cadar (L) (car (cdr (car L))))
-(defun caddr (L) (car (cdr (cdr L))))
-(defun caar (L) (car (car L)))
-(defun pairp (x) (and x (listp x))) ;; already defined?
-
-
 ;; To modify word movement and deletion:
 ;;(require 'subword-mode)
 ;; (defun char-stx-type (ch) (char-to-string (char-syntax ch)))
@@ -124,8 +118,11 @@
 ;;   ;; Skip whitespace:
 ;;   (while (/= (point-stx) "-") (forward-char))
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Pattern matching macro stuff:
+
 ;; (this is mostly for fun, considering a significant
 ;;  amt of pattern matching is built in)
 
@@ -139,7 +136,7 @@
   (and (listp spec)
        (= (length spec) 3)
        (= (car spec) 'cons)))
-(defun fits-consp (x) (pairp x))
+(defun fits-consp (x) (consp x))
 
 ;; NIL:
 (defun nil-matchp (spec)
@@ -155,7 +152,7 @@
 (defun fits-valuep (x) (value-matchp x))
 
 (defun M_vconcat (&rest args)
-  ;; TODO: a monadic vconcat. if any args or nil (or non-vector), then
+  ;; TODO: a monadic vconcat. if any args is nil (or non-vector), then
   ;; return nil. Otherwise, concatenate
   )
 
@@ -206,10 +203,36 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; KEYBINDINGS
 
+;; Rationale behind rebinding of so many keys (below):
+;; I have been getting used to Emacs's default mvmnt
+;; commands (e.g. C- f,b,n,p for movement), but even though
+;; it's fairly simple to get these into muscle memory, they,
+;; and some other movment patterns (e.g. M-f for move by word,
+;; C-f by char. Slow and awkward to jump btwn M and C so much).
+;; There are a few sets of commands that provide really nice
+;; versatile and work best with a full layout redo:
+;;  scrolling (M-h, M-y, M-H, M-Y, M-I, M-K)
+;;  movement (M-i,j,k,l,u,o,9,0)
+;;  editing (M-w,e,d,f,F)
+;;  window switching (M-t M-i,j,k,l)
+;;  buffer switching (M-b M-j,l)
+;; With the C-f/M-f example, the setup with M-i,j,k,l for character
+;; movement and M-u,o for word movement allows for much faster
+;; and more precise movement. Additionally, not having to jump
+;; around on the keyboard, and being able to do most movement
+;; with one hand, is pretty nice too. I'll be seeing if it's nice
+;; enough to make up for the hassle of dealing with minor and major
+;; modes shadowing my keybindings.
+
 ;; Helpers:
+(defun cadar (L) (car (cdr (car L))))
+
+(defun caar (L) (car (car L)))
+
 (defun remap-kbds (km remaps)
   (when remaps
     (define-key km [remap (caar remaps)] (cadar remaps))
@@ -225,6 +248,7 @@
 
 
 ;; Org-mode:
+;; TODO: THE FOLLOWING CUSTOMIZATIONS DONT WORK
 (require 'org)
 
 (defvar org-keys
@@ -238,7 +262,6 @@
      "C-j" org-backward-sentence
      "C-l" org-forward-sentence
      "M-e" kill-word-backward)))
-;; TODO: THE FOLLOWING CUSTOMIZATIONS DONT WORK
 
 (attach-kbds org-mode-map org-keys)
 
@@ -268,7 +291,9 @@
 
 (defun kill-word-backward (&optional arg)
   (interactive "P")
-  (kill-word (or arg -1)))
+  (kill-word (or (- arg) -1)))
+
+;; hello world hello world hello world
 
 (defun kill-and-join-line-forward (&optional arg)
   (interactive "P")
@@ -279,8 +304,9 @@
              (kill-line arg))
     (kill-line arg)))
 
+;; Functions to maximize in Windows with Emacs version < 24.4:
 (defun restore-frame-with-w32 ()
-  "Restore a minimized frame with w32-send-sys-command"
+  "Restore a maximized frame with w32-send-sys-command"
   (interactive)
   (w32-send-sys-command 61728))
 
@@ -296,19 +322,12 @@
 
 (defvar frame-maximized-width 150)
 (defvar frame-maximized-height 40)
-;; TODO: REPLACE FIXED VALS WITH PORTABLE SYSTEM:
-;; (defun calc-max-dims ()
-;;   (maximize-frame)
-;;   (defconst frame-maximized-width (get-frame-width))
-;;   (defconst frame-maximized-height (get-frame-height))
-;;   (restore-frame))
-;;(add-hook 'after-init-hook 'calc-max-dims)
-;;(run-at-time 0.1 nil (calc-max-dims))
 
 (defun frame-is-maximized ()
   (and (>= (get-frame-width) frame-maximized-width)
        (>= (get-frame-height) frame-maximized-height)))
 
+;; Use either (toggle-frame-fullscreen) or the above fallback system:
 (defun toggle-maximization ()
   (interactive)
   (if (fboundp 'toggle-frame-fullscreen)
@@ -558,6 +577,13 @@
 ;; ? S-TAB or M-TAB for removing the indent, like M-S-f except without killing it
 ;; - go to line number (just M-S-< with prefix arg for number?)
 ;; ? shortcut to run `git pull' in .emacs.d folder
+;; - HideShow seems very useful. If I can mess with it to make it remember what
+;;   internal blocks have been minimized when minimizing a containing one, so
+;;   that when the enclosing one is shown again, the internal hidden blocks
+;;   remain hidden, that would greatly increase its usefulness to me. Also,
+;;   perhaps making the hide/show commands only trigger iff the start of the
+;;   block is on the current line, to prevent accidents and avoid frequent
+;;   use of `move-end-of-line'.
 
 ;; Weird braindropping shit
 ;; - newline-with-continuity?
