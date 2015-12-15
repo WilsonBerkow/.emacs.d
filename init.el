@@ -291,7 +291,7 @@
 
 (defun kill-word-backward (&optional arg)
   (interactive "P")
-  (kill-word (or (- arg) -1)))
+  (kill-word (if arg (- arg) -1)))
 
 ;; hello world hello world hello world
 
