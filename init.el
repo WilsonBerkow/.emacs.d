@@ -94,6 +94,7 @@
               ("g" . "C-")
               ("G" . "C-M-")))
       (god-mode-all))))
+(god-meta-mode)
 
 ;; Haskell:
 (require 'haskell-interactive-mode)
