@@ -58,6 +58,9 @@
             ;; paredit
             clojure-mode)))
 
+;; Because Windows Emacs has problems with SSL connections:
+(defvar gnutls-trustfiles '("C:\\Users\\Wilson\\Downloads\\gnutls\\certificate-also-necessary\\cacert.pem"))
+
 (condition-case nil
     (init--install-packages)
   (error
@@ -70,8 +73,6 @@
 ;; (autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
 ;; (global-set-key "\M-~" 'browse-url)
 
-;; Because Windows Emacs has problems with SSL connections:
-(defvar gnutls-trustfiles '("C:\\Users\\Wilson\\Downloads\\gnutls\\certificate-also-necessary\\cacert.pem"))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -293,8 +294,6 @@
   (interactive "P")
   (kill-word (if arg (- arg) -1)))
 
-;; hello world hello world hello world
-
 (defun kill-and-join-line-forward (&optional arg)
   (interactive "P")
   (if (and (eolp) (not (bolp)))
@@ -330,16 +329,18 @@
 ;; Use either (toggle-frame-fullscreen) or the above fallback system:
 (defun toggle-maximization ()
   (interactive)
-  (if (fboundp 'toggle-frame-fullscreen)
-      (toggle-frame-fullscreen)
-    (when (fboundp 'w32-send-sys-command)
+  (if (fboundp 'w32-send-sys-command)
       (if (frame-is-maximized)
           (restore-frame-with-w32)
-        (maximize-frame-with-w32)))))
+        (maximize-frame-with-w32))
+    (when (fboundp 'toggle-frame-fullscreen)
+      (toggle-frame-fullscreen))))
 
-(toggle-maximization)
-
-
+(if (eq system-type 'windows-nt)
+    ;; On Windows, set maximization as the default
+    (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  ;; On all else, just fullscreen it
+  (toggle-maximization))
 
 ;; Global keybindings:
 (defvar char-movement
