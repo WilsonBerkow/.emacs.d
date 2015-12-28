@@ -4,14 +4,16 @@
 ;; ~ means consider removing
 (column-number-mode)
 (show-paren-mode 1)
+(setq-default show-trailing-whitespace t)
 (setq-default indent-tabs-mode nil)
 (set-buffer-file-coding-system 'utf-8-unix)
 (setq inhibit-startup-screen t)
-(setq echo-keystrokes 0.1) ;; ~
+(setq echo-keystrokes 0.1)
 (setq delete-by-moving-to-trash t) ;; ~
 (setq shift-select-mode nil)
 (delete-selection-mode 1) ;; Delete selected text after start typing
 (global-linum-mode 1)
+(subword-mode 1)
 (when (eq system-type 'darwin)
   (setq mac-option-key-is-meta nil)
   (setq mac-command-key-is-meta t)
@@ -48,7 +50,7 @@
 (defun init--install-packages ()
   (mapcar 'require-package
           '(;; magit
-            ;; subword-mode
+            visible-mark
             god-mode ;; experimental ATM
             haskell-mode
             async
@@ -61,12 +63,12 @@
 ;; Because Windows Emacs has problems with SSL connections:
 (defvar gnutls-trustfiles '("C:\\Users\\Wilson\\Downloads\\gnutls\\certificate-also-necessary\\cacert.pem"))
 
+
 (condition-case nil
     (init--install-packages)
   (error
    (package-refresh-contents)
    (init--install-packages)))
-
 
 ;; REVISIT w3m LATER:
 ;; (setq browse-url-browser-function 'w3m-browse-url)
@@ -75,15 +77,32 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Consider another approach
+;; ;; visible-mark -- show where the mark is, not where the region is
+;; (defface visible-mark-active
+;;   '((t (:background "orange"
+;;         :weight ultra-bold)))
+;;   "")
+;; (transient-mark-mode 0)
+;; (global-visible-mark-mode 1)
 
-
-;;(add-to-list 'load-path "~/elisp/")
 
 ;; god-mode
 (require 'god-mode)
 (global-set-key (kbd "<escape>") 'god-meta-mode)
+(define-key god-local-mode-map (kbd "<backspace>") 'god-mode-backspace)
+(define-key god-local-mode-map (kbd "/") 'god-mode-all)
 (setq god-exempt-predicates nil)
 (setq god-exempt-major-modes nil)
+
+(defun god-update-cursor ()
+  (setq cursor-type
+        (if god-local-mode
+            'box
+          'bar)))
+(add-hook 'god-mode-enabled-hook 'god-update-cursor)
+(add-hook 'god-mode-disabled-hook 'god-update-cursor)
+
 (defun god-meta-mode ()
   (interactive)
   (if god-local-mode
@@ -94,7 +113,27 @@
               ("g" . "C-")
               ("G" . "C-M-")))
       (god-mode-all))))
+
+;; (defun god-mode-ret ()
+;;   (interactive)
+;;   (forward-line 1)
+;;   (move-beginning-of-line 1))
+
+(defun god-mode-backspace ()
+  (interactive)
+  (delete-backward-char 1)
+  (god-mode-all))
+
 (god-meta-mode)
+
+;; ELisp Editing
+(put 'add-hook 'lisp-indent-function 1)
+
+;; HTML:
+(add-hook 'html-mode-hook
+  (lambda ()
+    ;; Indent with 4 spaces rather than 2-spaces default
+    (set (make-local-variable 'sgml-basic-offset) 4)))
 
 ;; Haskell:
 (require 'haskell-interactive-mode)
@@ -172,7 +211,7 @@
                         (parse-match (cdr x) (nth 2 match-spec)))))
           ((value-matchp match-spec)
            (when (fits-valuep x) []))
-          
+          ;;
           )
     ))
 ;; TODO ^
@@ -366,8 +405,8 @@
     ("M->" end-of-buffer)
     ("M-(" backward-paragraph)
     ("M-)" forward-paragraph)
-    ("M-9" back-to-indentation-or-beginning)
-    ("M-0" move-end-of-line)))
+    ("M-n" back-to-indentation-or-beginning)
+    ("M-m" move-end-of-line)))
 
 (define-key (current-global-map)
   [remap move-beginning-of-line]
@@ -375,13 +414,24 @@
 
 (defvar edit-char
   '(("M-d" delete-char)
+    ("M-s" delete-backward-char)
     ("M-w" kill-word-backward)
     ("M-e" kill-word)))
 
+(defun kill-whole-line-maintain-column (&optional n)
+  (interactive "p")
+  (let ((column (current-column)))
+    (if (= (line-number-at-pos (point)) (line-number-at-pos (buffer-end 1)))
+        (kill-whole-line (- (or n 1)))
+      (kill-whole-line n))
+    (move-to-column column)))
+
 (defvar edit-other
   '(("M-f" kill-and-join-line-forward)
-    ("M-F" kill-whole-line)
-    ("M--" undo)))
+    ("M-F" kill-whole-line-maintain-column)
+    ("M-_" undo)
+    ("M-'" comment-dwim)
+    ("<M-S-backspace>" 'delete-trailing-whitespace)))
 
 (defvar clipboard
   '(("M-x" kill-region)
@@ -393,7 +443,8 @@
   '(("M-y" scroll-down-line)
     ("M-h" scroll-up-line)
     ("M-Y" scroll-down)
-    ("M-H" scroll-up)))
+    ("M-H" scroll-up)
+    ("M-p" recenter-top-bottom)))
 
 (defun marker-is-point-p (marker)
   "test if marker is at point in the current buffer"
@@ -409,15 +460,6 @@
        (marker-is-point-p (last mark-ring))))
 
 ;; Much of the following mark commands can be credited to www.masteringemacs.org
-(defun push-mark-maybe-no-activate ()
-  "Pushes `point' to `mark-ring' and does not activate the region
-   Equivalent to \\[set-mark-command] when \\[transient-mark-mode] is disabled"
-  (interactive)
-  (unless (or (point-is-car-mark-ring)
-              (point-is-last-mark-ring))
-    (push-mark (point) t nil)
-    (message "Pushed mark to ring")))
-
 (defun lastcar (L) (car (last L)))
 
 (defun marker-to-string (marker)
@@ -469,26 +511,24 @@
   (exchange-point-and-mark)
   (deactivate-mark nil))
 
+;; TODO: Complete mark things started above
+
 (defvar navigation ;; More complex movement
   '(("M-SPC" set-mark-command)
-    ("M-`" push-mark-maybe-no-activate)
-    ("M-1" jump-to-mark)
-    ("M-2" exchange-point-and-mark-no-activate)
-    ("M-7" jump-to-mark)
-    ("M-8" backward-mark-ring)
-    ("M-n" isearch-backward)
-    ("M-m" isearch-forward)))
+    ("M-:" isearch-backward)
+    ("M-;" isearch-forward)))
 
 (defvar isearch-keys
-  '(("M-n" isearch-repeat-backward)
-    ("M-m" isearch-repeat-forward)
-    ;; TODO: M-N, M-M for replace
+  '(("M-:" isearch-repeat-backward)
+    ("M-;" isearch-repeat-forward)
+    ;; TODO: C-: C-; for replace
     ))
 
 (attach-kbds isearch-mode-map isearch-keys)
 
 (defvar execution
-  '(("M-'" execute-extended-command)
+  '(("M-a" execute-extended-command)
+    ("M-A" eval-expression)
     ("M-]" async-shell-command)
     ("M-}" shell-command) ;; Synchronous
     ("M-|" shell)
@@ -506,8 +546,7 @@
           execution))
 
 (attach-kbds (current-global-map) all-global)
-(global-set-key (kbd "M-RET") 'newline-and-indent)
-(global-set-key (kbd "M-q") 'keyboard-quit)
+(global-set-key (kbd "\S-RET") 'newline-and-indent)
 
 ;; Prefix keymaps:
 (defun switch-to-next-buffer ()
