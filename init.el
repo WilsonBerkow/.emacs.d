@@ -67,8 +67,13 @@
 (condition-case nil
     (init--install-packages)
   (error
-   (package-refresh-contents)
-   (init--install-packages)))
+   (condition-case nil
+       (progn (package-refresh-contents)
+              (init--install-packages))
+     (error
+      (message "Error installing packages")))))
+;; TODO: divide below code into several files, and handle
+;; installation errors when/before running them
 
 ;; REVISIT w3m LATER:
 ;; (setq browse-url-browser-function 'w3m-browse-url)
