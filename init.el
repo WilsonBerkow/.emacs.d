@@ -576,6 +576,15 @@
 
 ;;(require 'frame-cmds)
 
+(defun my-split-window-down-and-move ()
+  (interactive)
+  (split-window-below)
+  (windmove-down))
+(defun my-split-window-right-and-move ()
+  (interactive)
+  (split-window-right)
+  (windmove-right))
+
 (defvar window-keymap (make-sparse-keymap))
 (attach-kbds window-keymap
   '(("M-j" windmove-left)
@@ -583,10 +592,10 @@
     ("M-i" windmove-up)
     ("M-k" windmove-down)
     ("M-o" other-window)
-    ;;("M-J" split window right, then switch to left)
-    ("M-L" split-window-right)
-    ;;("M-I" split window below, then switch up)
-    ("M-K" split-window-below)
+    ("M-J" split-window-right)
+    ("M-L" my-split-window-right-and-move)
+    ("M-I" split-window-below)
+    ("M-K" my-split-window-down-and-move)
     ("M-a" toggle-maximization)
     ("M-d" delete-window)
     ("M-1" delete-other-windows)
