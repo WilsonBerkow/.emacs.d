@@ -434,7 +434,7 @@
 (defvar edit-other
   '(("M-f" kill-and-join-line-forward)
     ("M-F" kill-whole-line-maintain-column)
-    ("M-_" undo)
+    ("M-\\" undo)
     ("M-'" comment-dwim)
     ("<M-S-backspace>" 'delete-trailing-whitespace)))
 
@@ -562,6 +562,23 @@
   (interactive)
   (find-file "~/.emacs.d/init.el"))
 
+;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
+(defun rename-file-and-buffer ()
+  "Renames both current buffer and file it's visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((name (buffer-name))
+        (filename (buffer-file-name)))
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (let ((new-name (read-string "New name: ")))
+        (if (get-buffer new-name)
+            (message "A buffer named '%s' already exists!" new-name)
+          (progn
+            (rename-file name new-name 1)
+            (rename-buffer new-name)
+            (set-visited-file-name new-name)
+            (set-buffer-modified-p nil)))))))
+
 (defvar buffer-keymap (make-sparse-keymap))
 (attach-kbds buffer-keymap
   '(("M-j" switch-to-prev-buffer)
@@ -569,6 +586,7 @@
     ("M-s" save-buffer)
     ("M-a" mark-whole-buffer)
     ("M-w" write-file)
+    ("M-r" rename-file-and-buffer)
     ("M-o" find-file)
     ("M-e" open-init-dot-el-file)
     ("M-d" kill-buffer)
