@@ -13,7 +13,7 @@
 (setq shift-select-mode nil)
 (delete-selection-mode 1) ;; Delete selected text after start typing
 (global-linum-mode 1)
-(subword-mode 1)
+(global-subword-mode 1)
 (when (eq system-type 'darwin)
   (setq mac-option-key-is-meta nil)
   (setq mac-command-key-is-meta t)
