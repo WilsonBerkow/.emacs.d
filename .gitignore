@@ -1,5 +1,4 @@
-elpa/
 auto-save-list/
 *.elc
 *~
-#*#
+\#*\#
