@@ -417,8 +417,8 @@
 (defvar other-movement
   '(("M-<" beginning-of-buffer)
     ("M->" end-of-buffer)
-    ("M-(" backward-paragraph)
-    ("M-)" forward-paragraph)
+    ("M-U" backward-paragraph)
+    ("M-O" forward-paragraph)
     ("M-n" back-to-indentation-or-beginning)
     ("M-m" move-end-of-line)))
 
