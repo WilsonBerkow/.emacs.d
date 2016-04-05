@@ -1,0 +1,7 @@
+# General emacs todo
+
+## Design of commands
+- mark in visual mark mode. Ugly interface. Should be:
+  - on `set-mark-command`, if selection exists should deactivate
+  - idk actually about this one
+

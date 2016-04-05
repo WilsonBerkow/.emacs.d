@@ -19,6 +19,8 @@
   (setq mac-command-key-is-meta t)
   (setq mac-command-modifier 'meta)
   (setq mac-option-modifier 'none))
+(tool-bar-mode -1)
+(menu-bar-mode 1) ;; Still feels weird without it...
 
 ;; Consider: (require 'undo-tree)...? Just to try.
 
@@ -29,8 +31,8 @@
 (require 'package)
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives
-             '("org" . "https://orgmode.org/elpa/") t)
+;;(add-to-list 'package-archives
+;;             '("org" . "https://orgmode.org/elpa/") t)
 (when (< emacs-major-version 24)
   (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/")))
 (package-initialize)
@@ -58,7 +60,8 @@
             nodejs-repl
             markdown-mode
             ;; paredit
-            clojure-mode)))
+            clojure-mode
+            cider-mode)))
 
 ;; Because Windows Emacs has problems with SSL connections:
 (defvar gnutls-trustfiles '("C:\\Users\\Wilson\\Downloads\\gnutls\\certificate-also-necessary\\cacert.pem"))
@@ -99,6 +102,12 @@
 (define-key god-local-mode-map (kbd "/") 'god-mode-all)
 (setq god-exempt-predicates nil)
 (setq god-exempt-major-modes nil)
+
+(defun god-mode-aware ()
+  (god-meta-mode)
+  (god-meta-mode))
+
+(add-hook 'find-file-hook 'god-mode-aware)
 
 (defun god-update-cursor ()
   (setq cursor-type
