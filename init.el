@@ -270,11 +270,11 @@
 ;; C-f by char. Slow and awkward to jump btwn M and C so much).
 ;; There are a few sets of commands that provide really nice
 ;; versatile and work best with a full layout redo:
-;;  scrolling (M-h, M-y, M-H, M-Y, M-I, M-K)
-;;  movement (M-i,j,k,l,u,o,9,0)
-;;  editing (M-w,e,d,f,F)
-;;  window switching (M-t M-i,j,k,l)
-;;  buffer switching (M-b M-j,l)
+;;  scrolling -- M-h, M-y, M-H, M-Y, M-I, M-K
+;;  movement -- M-i,j,k,l,u,o,U,O
+;;  editing -- M-w,e,d,f,F
+;;  window switching -- M-t M-i,j,k,l
+;;  buffer switching -- M-b M-j,l
 ;; With the C-f/M-f example, the setup with M-i,j,k,l for character
 ;; movement and M-u,o for word movement allows for much faster
 ;; and more precise movement. Additionally, not having to jump
@@ -307,16 +307,17 @@
 (require 'org)
 
 (defvar org-keys
-  '(("C-a" org-mark-element
+  '((;;"C-a" org-mark-element
      "M-h" scroll-up-line ;; To overwrite default M-h org-mark-element binding
-     "C-(" outline-previous-visible-heading
-     "C-)" outline-next-visible-heading
+     "M-e" kill-word
+     ;;"C-(" outline-previous-visible-heading
+     ;;"C-)" outline-next-visible-heading
      ;; Overwrite M-9,0?
-     "C-i" org-shiftup
-     "C-k" org-shiftdown
-     "C-j" org-backward-sentence
-     "C-l" org-forward-sentence
-     "M-e" kill-word-backward)))
+     ;;"C-i" org-shiftup
+     ;;"C-k" org-shiftdown
+     ;;"C-j" org-backward-sentence
+     ;;"C-l" org-forward-sentence
+     )))
 
 (attach-kbds org-mode-map org-keys)
 
