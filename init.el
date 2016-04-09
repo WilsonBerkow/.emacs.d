@@ -66,15 +66,15 @@
 ;; Because Windows Emacs has problems with SSL connections:
 (defvar gnutls-trustfiles '("C:\\Users\\Wilson\\Downloads\\gnutls\\certificate-also-necessary\\cacert.pem"))
 
-
-(condition-case nil
-    (init--install-packages)
-  (error
-   (condition-case nil
-       (progn (package-refresh-contents)
-              (init--install-packages))
-     (error
-      (message "Error installing packages")))))
+(defun my-update-packages ()
+  (condition-case nil
+      (init--install-packages)
+    (error
+     (condition-case nil
+         (progn (package-refresh-contents)
+                (init--install-packages))
+       (error
+        (message "Error installing packages"))))))
 ;; TODO: divide below code into several files, and handle
 ;; installation errors when/before running them
 
