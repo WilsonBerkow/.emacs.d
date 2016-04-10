@@ -296,6 +296,7 @@
 
 (defun attach-kbds (km bindings)
   (when bindings
+    (message "Binding %s to %s" (caar bindings) (cadar bindings))
     (define-key km (kbd (caar bindings)) (cadar bindings))
     (attach-kbds km (cdr bindings))))
 (put 'attach-kbds 'lisp-indent-function 1)
@@ -303,24 +304,25 @@
 
 
 ;; Org-mode:
-;; TODO: THE FOLLOWING CUSTOMIZATIONS DONT WORK
 (require 'org)
 
 (defvar org-keys
-  '((;;"C-a" org-mark-element
-     "M-h" scroll-up-line ;; To overwrite default M-h org-mark-element binding
-     "M-e" kill-word
-     ;;"C-(" outline-previous-visible-heading
-     ;;"C-)" outline-next-visible-heading
-     ;; Overwrite M-9,0?
-     ;;"C-i" org-shiftup
-     ;;"C-k" org-shiftdown
-     ;;"C-j" org-backward-sentence
-     ;;"C-l" org-forward-sentence
-     )))
+  '(;; Overlay my bindings over org's:
+    ("M-h" scroll-up-line)
+    ("M-a" execute-extended-command)
+    ("M-e" kill-word-backward)
+    ;;("C-a" org-mark-element)
+    ;;("C-(" outline-previous-visible-heading)
+    ;;("C-)" outline-next-visible-heading)
+    ;;("C-i" org-shiftup)
+    ;;("C-k" org-shiftdown)
+    ;;("C-j" org-backward-sentence)
+    ;;("C-l" org-forward-sentence)
+    ))
 
-(attach-kbds org-mode-map org-keys)
-
+(add-hook 'org-mode-hook
+  (lambda ()
+    (attach-kbds org-mode-map org-keys)))
 ;; Allow alphabetic list-labels (e.g. A) ... B) ... etc.)
 (setq org-mode-list-allow-alphabetical t)
 
