@@ -301,8 +301,6 @@
     (attach-kbds km (cdr bindings))))
 (put 'attach-kbds 'lisp-indent-function 1)
 
-
-
 ;; Org-mode:
 (require 'org)
 
@@ -310,7 +308,7 @@
   '(;; Overlay my bindings over org's:
     ("M-h" scroll-up-line)
     ("M-a" execute-extended-command)
-    ("M-e" kill-word-backward)
+    ("M-e" kill-word)
     ;;("C-a" org-mark-element)
     ;;("C-(" outline-previous-visible-heading)
     ;;("C-)" outline-next-visible-heading)
