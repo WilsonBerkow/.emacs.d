@@ -42,6 +42,9 @@
              '("melpa" . "https://melpa.org/packages/") t)
 ;;(add-to-list 'package-archives
 ;;             '("org" . "https://orgmode.org/elpa/") t)
+(add-to-list 'package-archives
+             '("marmalade" . "https://marmalade-repo.org/packages/"))
+
 (when (< emacs-major-version 24)
   (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/")))
 (package-initialize)
