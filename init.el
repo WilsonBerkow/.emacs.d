@@ -22,9 +22,18 @@
 (tool-bar-mode -1)
 (menu-bar-mode 1) ;; Still feels weird without it...
 
+;; Set font to Consolas
+(set-face-attribute 'default nil :font "Consolas")
+(set-frame-font "Consolas" nil t)
+
+;; Indent java argument lists with 4 spaces on next line
+(add-hook 'java-mode-hook '(lambda () (c-set-offset 'arglist-intro '+)))
+
 ;; Consider: (require 'undo-tree)...? Just to try.
 
-
+;; Processing
+(setq processing-location "~/processing-3.1.1/processing-java.exe")
+(setq processing-application-dir "~/processing-3.1.1")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Melpa:
@@ -96,49 +105,49 @@
 
 
 ;; god-mode
-(require 'god-mode)
-(global-set-key (kbd "<escape>") 'god-meta-mode)
-(define-key god-local-mode-map (kbd "<backspace>") 'god-mode-backspace)
-(define-key god-local-mode-map (kbd "/") 'god-mode-all)
-(setq god-exempt-predicates nil)
-(setq god-exempt-major-modes nil)
+;; (require 'god-mode)
+;; (global-set-key (kbd "<escape>") 'god-meta-mode)
+;; (define-key god-local-mode-map (kbd "<backspace>") 'god-mode-backspace)
+;; (define-key god-local-mode-map (kbd "/") 'god-mode-all)
+;; (setq god-exempt-predicates nil)
+;; (setq god-exempt-major-modes nil)
 
-(defun god-mode-aware ()
-  (god-meta-mode)
-  (god-meta-mode))
+;; (defun god-mode-aware ()
+;;   (god-meta-mode)
+;;   (god-meta-mode))
 
-(add-hook 'find-file-hook 'god-mode-aware)
+;; (add-hook 'find-file-hook 'god-mode-aware)
 
-(defun god-update-cursor ()
-  (setq cursor-type
-        (if god-local-mode
-            'box
-          'bar)))
-(add-hook 'god-mode-enabled-hook 'god-update-cursor)
-(add-hook 'god-mode-disabled-hook 'god-update-cursor)
+;; (defun god-update-cursor ()
+;;   (setq cursor-type
+;;         (if god-local-mode
+;;             'box
+;;           'bar)))
+;; (add-hook 'god-mode-enabled-hook 'god-update-cursor)
+;; (add-hook 'god-mode-disabled-hook 'god-update-cursor)
 
-(defun god-meta-mode ()
-  (interactive)
-  (if god-local-mode
-      (god-mode-all)
-    (progn
-      (setq god-mod-alist
-            '((nil . "M-")
-              ("g" . "C-")
-              ("G" . "C-M-")))
-      (god-mode-all))))
-
-;; (defun god-mode-ret ()
+;; (defun god-meta-mode ()
 ;;   (interactive)
-;;   (forward-line 1)
-;;   (move-beginning-of-line 1))
+;;   (if god-local-mode
+;;       (god-mode-all)
+;;     (progn
+;;       (setq god-mod-alist
+;;             '((nil . "M-")
+;;               ("g" . "C-")
+;;               ("G" . "C-M-")))
+;;       (god-mode-all))))
 
-(defun god-mode-backspace ()
-  (interactive)
-  (delete-backward-char 1)
-  (god-mode-all))
+;; ;; (defun god-mode-ret ()
+;; ;;   (interactive)
+;; ;;   (forward-line 1)
+;; ;;   (move-beginning-of-line 1))
 
-(god-meta-mode)
+;; (defun god-mode-backspace ()
+;;   (interactive)
+;;   (delete-backward-char 1)
+;;   (god-mode-all))
+
+;; (god-meta-mode)
 
 ;; ELisp Editing
 (put 'add-hook 'lisp-indent-function 1)
@@ -318,9 +327,9 @@
     ;;("C-l" org-forward-sentence)
     ))
 
-(add-hook 'org-mode-hook
-  (lambda ()
-    (attach-kbds org-mode-map org-keys)))
+;; (add-hook 'org-mode-hook
+;;   (lambda ()
+;;     (attach-kbds org-mode-map org-keys)))
 ;; Allow alphabetic list-labels (e.g. A) ... B) ... etc.)
 (setq org-mode-list-allow-alphabetical t)
 
@@ -399,9 +408,9 @@
 
 ;; Global keybindings:
 (defvar char-movement
-  '(("M-j" backward-char)
+  '(("M-h" backward-char)
     ("M-l" forward-char)
-    ("M-i" previous-line)
+    ("M-j" previous-line)
     ("M-k" next-line)
     ("M-u" backward-word)
     ("M-o" forward-word)
@@ -539,7 +548,7 @@
     ;; TODO: C-: C-; for replace
     ))
 
-(attach-kbds isearch-mode-map isearch-keys)
+;;(attach-kbds isearch-mode-map isearch-keys)
 
 (defvar execution
   '(("M-a" execute-extended-command)
@@ -560,8 +569,8 @@
           navigation
           execution))
 
-(attach-kbds (current-global-map) all-global)
-(global-set-key (kbd "\S-RET") 'newline-and-indent)
+;; (attach-kbds (current-global-map) all-global)
+;; (global-set-key (kbd "\S-RET") 'newline-and-indent)
 
 ;; Prefix keymaps:
 (defun switch-to-next-buffer ()
@@ -629,16 +638,16 @@
     ("M-1" delete-other-windows)
     ("M-y" enlarge-window)
     ("M-h" enlarge-window-horizontally)))
-(global-set-key (kbd "M-b") buffer-keymap)
-(global-set-key (kbd "M-t") window-keymap)
+;;(global-set-key (kbd "M-b") buffer-keymap)
+;;(global-set-key (kbd "M-t") window-keymap)
 
 (defvar help-keymap (make-sparse-keymap))
 (attach-kbds help-keymap
   '(("M-k" describe-key)
     ("M-b" describe-bindings)))
-(global-set-key (kbd "M-?") help-keymap)
+;; (global-set-key (kbd "M-?") help-keymap)
 
-(global-set-key (kbd "M-SPC") 'set-mark-command)
+;; (global-set-key (kbd "M-SPC") 'set-mark-command)
 
 (global-set-key (kbd "S-C-<left>") 'shrink-window-horizontally)
 (global-set-key (kbd "S-C-<right>") 'enlarge-window-horizontally)
@@ -676,3 +685,6 @@
 ;; - paste-without-context? for, e.g., you paste onto a line with a comment and
 ;;    all successive lines are also commented. Like paste-without-formatting in
 ;;    word processors
+
+(require 'evil)
+(evil-mode)
