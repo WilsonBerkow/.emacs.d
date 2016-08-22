@@ -4,6 +4,7 @@
 ;; ~ means consider removing
 (column-number-mode)
 (show-paren-mode 1)
+(blink-cursor-mode 0)
 (setq-default show-trailing-whitespace t)
 (setq-default indent-tabs-mode nil)
 (set-buffer-file-coding-system 'utf-8-unix)
@@ -20,11 +21,15 @@
   (setq mac-command-modifier 'meta)
   (setq mac-option-modifier 'none))
 (tool-bar-mode -1)
-(menu-bar-mode 1) ;; Still feels weird without it...
+(menu-bar-mode 0)
 
-;; Set font to Consolas
-(set-face-attribute 'default nil :font "Consolas")
-(set-frame-font "Consolas" nil t)
+;; Set font to Consolas, if available
+(condition-case nil
+    (progn
+      (set-face-attribute 'default nil :font "Consolas")
+      (set-frame-font "Consolas" nil t))
+  (error nil))
+
 
 ;; Indent java argument lists with 4 spaces on next line
 (add-hook 'java-mode-hook '(lambda () (c-set-offset 'arglist-intro '+)))
@@ -36,18 +41,22 @@
 (setq processing-application-dir "~/processing-3.1.1")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Melpa:
+;; Package archives:
 (require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
-;;(add-to-list 'package-archives
-;;             '("org" . "https://orgmode.org/elpa/") t)
-(add-to-list 'package-archives
-             '("marmalade" . "https://marmalade-repo.org/packages/"))
+(setq
+ package-archives
+ '(("marmalade" . "http://marmalade-repo.org/packages/")
+   ("melpa" . "http://stable.melpa.org/packages/")))
 
 (when (< emacs-major-version 24)
   (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/")))
 (package-initialize)
+
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/elisp/"))
+
+(load "folding")
+(folding-mode-add-find-file-hook)
+(folding-add-to-marks-list 'fundamental-mode "{{{" "}}}" nil t)
 
 (defun require-package (package &optional min-version no-refresh)
   "Install given PACKAGE, optionally requiring MIN-VERSION.
@@ -104,9 +113,16 @@
 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 (custom-set-variables
- '(haskell-process-suggest-remove-import-lines t)
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "a8245b7cc985a0610d71f9852e9f2767ad1b852c2bdea6f4aadc12cce9c4d6d0" default)))
  '(haskell-process-auto-import-loaded-modules t)
- '(haskell-process-log t))
+ '(haskell-process-log t)
+ '(haskell-process-suggest-remove-import-lines t))
 
 ;;(add-to-list 'load-path "~/haskell-mode/")
 ;;(require 'haskell-mode-autoloads)
@@ -129,9 +145,12 @@
 ;;     ;;("C-l" org-forward-sentence)
 ;;     ))
 
-;; (add-hook 'org-mode-hook
-;;   (lambda ()
-;;     (attach-kbds org-mode-map org-keys)))
+(add-hook 'org-mode-hook
+ (lambda ()
+   (visual-line-mode 1)
+   (show-all)
+   ;;(attach-kbds org-mode-map org-keys)
+   ))
 ;; Allow alphabetic list-labels (e.g. A) ... B) ... etc.)
 (setq org-mode-list-allow-alphabetical t)
 
@@ -185,6 +204,34 @@
 
 (require 'evil)
 (evil-mode)
+(define-key evil-normal-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
+(define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+(define-key evil-motion-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
+(define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+(setq evil-cross-lines t)
+(define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
+(define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
+(define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
+(define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)
+
+;; <esc> quits (source: https://stackoverflow.com/a/10166400)
+(defun minibuffer-keyboard-quit ()
+  "Abort recursive edit.
+In Delete Selection mode, if the mark is active, just deactivate it;
+then it takes a second \\[keyboard-quit] to abort the minibuffer."
+  (interactive)
+  (if (and delete-selection-mode transient-mark-mode mark-active)
+      (setq deactivate-mark  t)
+    (when (get-buffer "*Completions*") (delete-windows-on "*Completions*"))
+    (abort-recursive-edit)))
+(define-key evil-normal-state-map [escape] 'keyboard-quit)
+(define-key evil-visual-state-map [escape] 'keyboard-quit)
+(define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
+
 
 ;; To modify word movement and deletion:
 ;;(require 'subword-mode)
@@ -194,3 +241,9 @@
 ;;   (interactive)
 ;;   ;; Skip whitespace:
 ;;   (while (/= (point-stx) "-") (forward-char))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
